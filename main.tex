@@ -1,0 +1,203 @@
+\documentclass[a4paper,12pt]{book}
+\usepackage{graphicx}
+
+
+% Para tildes, enies y cosas raras de utf8
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+
+\usepackage{pgfpages}
+%\pgfpagesuselayout{2 on 1}[a4paper, landscape] % Horizontal
+
+\setcounter{tocdepth}{3}
+
+\usepackage{amsmath, amssymb}
+
+% Para bloques de código:
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{fancyvrb}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{hyperref}
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+
+
+\usetikzlibrary{graphs,graphs.standard}
+
+\geometry{a4paper, margin=2.5cm}
+\hypersetup{
+	pdftitle={Notas de Programación Competitiva},
+	pdfauthor={Milena Pellegrino},
+	pdfstartview={FitH}
+}
+
+% --- Definiciones de colores y estilos ---
+\definecolor{codegray}{gray}{0.85}
+\definecolor{codeblue}{rgb}{0.2,0.2,0.7}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{backcolor}{rgb}{0.95,0.95,0.95}
+\definecolor{darkcomment}{rgb}{0.2,0.5,0.2}
+
+% Tu estilo original
+\lstdefinestyle{cppstyle}{
+	backgroundcolor=\color{backcolor},
+	commentstyle=\color{darkcomment}\ttfamily,
+	keywordstyle=\color{blue}\bfseries,
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codeblue},
+	basicstyle=\ttfamily\footnotesize,
+	breaklines=false,
+	captionpos=b,
+	keepspaces=true,
+	numbers=none,
+	numbersep=5pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	columns=fixed,
+	upquote=true,
+	tabsize=4,
+	language=C++
+}
+
+% El nuevo estilo 'mycpp' que falta
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolor}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mycpp}{
+	backgroundcolor=\color{backcolor},
+	commentstyle=\color{darkcomment},
+	keywordstyle=\color{blue},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,
+	breaklines=false,
+	captionpos=b,
+	keepspaces=true,
+	numbers=none,
+	numbersep=5pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	columns=fixed,
+	upquote=true,
+	tabsize=2,
+	morekeywords={std, vector, int, double, main, cin, cout, push_back, resize},
+}
+
+% Tu estilo global
+\lstset{
+	backgroundcolor=\color{backcolor},
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{blue},
+	commentstyle=\color{darkcomment},
+	stringstyle=\color{red},
+	numbers=none,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	frame=single,
+	breaklines=false,
+	columns=fixed,
+	keepspaces=true,
+	showtabs=false,
+	tabsize=4,
+	upquote=true,
+	showstringspaces=false,
+	captionpos=b,
+	language=C++,
+	morekeywords={ll, fore},
+}
+
+
+
+\begin{document}
+
+	\author{Milena Pellegrino}
+	\title{Notas de  Programación Competitiva}
+	\date{2025}
+	\frontmatter
+	\maketitle
+	
+	% Página adicional que aparecerá en la derecha
+	\thispagestyle{empty} % Sin numeración ni encabezados
+	\begin{center}
+		{\Large \textbf{Prefacio}}
+	\end{center}
+	
+	\vspace{1cm}
+	
+	Tenia este espacio al pedo y no sabia que escribir, le puse prefacio para que parezca profesional pero dice huevadas, despues se me ocurrio escribir un miini template que no tenga tantas cosas como mi template pero me quedaba grande la hoja y ademas ya habia gastado tiempo en escribir este hermoso prefacio, asi que simplemente deje esto, y puse el template abajo. 
+	
+	\vspace{1cm}
+	
+\begin{lstlisting}[
+	language=C++,
+	caption=Mi mini template bro,
+	numbers=none,          % sin números
+	xleftmargin=0pt,       % sin margen extra a la izquierda
+	framexleftmargin=0pt,  % sin margen del frame
+	numbersep=2pt,         % (por si dejas números en otros bloques)
+	gobble=1               % quita 1 carácter inicial (tu tab) por línea
+	]
+	#include<bits/stdc++.h>
+	using namespace std;
+	
+	#define fore(i,a,b) for(ll i=(a);i<(b);i++)
+	#define all(x) (x).begin(),(x).end()
+	#define pb push_back
+	#define fst first
+	#define snd second
+	#define sz(x) ((int)x.size())
+	
+	#define FIN ios::sync_with_stdio(0);cin.tie(0);cout.tie(0); 
+	
+	
+	using ll = long long;
+	typedef vector<ll> vi;
+	
+	int main(){
+		FIN; 
+
+		return 0;
+	}
+\end{lstlisting}
+
+	
+	\vspace{1cm}
+	
+	Me quedo  este espacio tambien libre y quise escribir esto para parecer toda una profesional, pero no se me ocurrio algo interesante, asi que, que le dice el 1 al 10? para ser como yo tienes que ser sincero.
+	
+	\vfill
+	
+	{\small \textit{Alan Turing, Argentina - 2025}}
+	
+	\newpage % Esto asegura que el índice vaya en la siguiente página (derecha)
+
+
+\tableofcontents
+
+\mainmatter
+\include{./TeX_files/1-Introduccion}
+\include{./TeX_files/2-lib-estandar}
+\include{./TeX_files/3-Busquedas}
+\include{./TeX_files/4-Matematica}
+\include{./TeX_files/5-prog-dinam}
+\include{./TeX_files/6-grafos}
+\include{./TeX_files/7-String}
+\include{./TeX_files/8-Est-datos} % Estructuras de datos 
+\include{./TeX_files/9-Arrays-Subarrays} % Estructuras de datos 
+
+% - TRiangulos 
+
+\backmatter
+% bibliography, glossary and index would go here.
+
+\end{document}

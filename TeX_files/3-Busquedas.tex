@@ -1,0 +1,347 @@
+\chapter{Búsquedas}
+
+\section{Búsqueda binaria}
+Siempre si vas a resolver algo con lower\_bound aunque lo diga o no lo diga el problema SIEMPRE pero SIEMPRE ordenalo, me comi varios wa porque confiaba que siempre venia ordenado. \\ 
+La función \texttt{lower\_bound} es una herramienta fundamental en la biblioteca estándar de C++ para realizar búsquedas eficientes en contenedores ordenados.
+
+\subsection{Función \texttt{lower\_bound}}
+\begin{itemize}
+	\item \textbf{Complejidad}: $O(\log n)$ para contenedores de acceso aleatorio como \texttt{vector}
+	\item \textbf{Comportamiento}: Devuelve un iterador al primer elemento que \textbf{no es menor} que el valor dado (primer elemento $\geq$ al valor buscado)
+	\item \textbf{Sintaxis}: \texttt{lower\_bound(iterador\_inicio, iterador\_fin, valor)}
+\end{itemize}
+
+\section{Problema de ejemplo}
+
+\subsection{Descripción}
+El aula se representa como una línea unidimensional con celdas desde $1$ hasta $n$. Inicialmente hay $m$ profesores y David en posiciones distintas. En cada movimiento:
+\begin{enumerate}
+	\item David se mueve a una celda adyacente o se queda
+	\item Todos los profesores se mueven simultáneamente a una celda adyacente o se quedan
+\end{enumerate}
+
+David es atrapado cuando algún profesor está en la misma celda. Todos actúan óptimamente: David maximiza el número de movimientos hasta ser atrapado, mientras los profesores lo minimizan.
+
+\subsection{Solución}
+Para cada consulta con la posición $a_i$ de David:
+\begin{enumerate}
+	\item Encontrar los dos profesores más cercanos (izquierda y derecha)
+	\item Calcular la mitad de la distancia entre ellos
+	\item David se moverá al punto medio para maximizar el tiempo
+\end{enumerate}
+
+\subsection{Código de Solución}
+\begin{lstlisting}[style=cppstyle, caption={Solución del problema}]
+
+	void solve() {
+		ll n; cin >> n;
+		ll m, q; cin >> m >> q;
+		vi b(m);
+		fore(i, 0, m) cin >> b[i];
+		vi a(q);
+		fore(i, 0, q) cin >> a[i];
+		
+		sort(all(b));
+		
+		fore(i, 0, q) {
+			ll izq = 0, der = 0;
+			ll res = 0;
+			auto it = lower_bound(all(b), a[i]);
+			
+			if (it == b.begin()) {
+				res = (*it) - 1;
+			} else if (it == b.end()) {
+				--it;
+				res = n - (*it);
+			} else {
+				der = *it;
+				--it;
+				izq = *it;
+				ll dist_der = der - a[i];
+				ll dist_izq = a[i] - izq;
+				res = (dist_der + dist_izq) / 2;
+			}
+			pri(res);
+		}
+	}
+\end{lstlisting}
+
+\section{Uso de \texttt{lower\_bound} para obtener índices}
+
+\subsection{Obtención del índice}
+Cuando se utiliza \texttt{lower\_bound} sobre un contenedor, podemos obtener la posición (índice) del elemento encontrado mediante aritmética de punteros:
+
+\begin{lstlisting}[style=cppstyle, caption={Obtención del índice con lower\_bound}]
+	void solve() {
+		ll n; cin>>n; ll k; cin>>k;
+		vi a(n); fore(i, 0, n) cin>>a[i];
+		
+		while(k--) {
+			ll val; cin >> val;
+			auto it = lower_bound(all(a), val);
+			ll res = it - a.begin();  // Obtenemos el indice
+			pri(res + 1);  // +1 para indice base 1
+		}
+	}
+\end{lstlisting}
+
+\subsection{Problema}
+Tenemos un edificio de $n$ pisos, cada piso $i$ con $a_i$ departamentos. Las cartas están numeradas linealmente desde $1$ hasta la suma total de departamentos.  
+Dado un número de carta $b_j$, hay que determinar:
+\begin{itemize}
+	\item El \textbf{piso} donde va la carta.
+	\item El \textbf{departamento dentro del piso}.
+\end{itemize}
+
+\textbf{Ejemplo:} $n=2$, $a=[3,5]$, carta $b=7$ → Piso $2$, departamento $4$.
+
+Idea de la solución
+1. Construimos un vector de \textbf{prefix sums}:
+\[
+\text{pref}[0] = a_0, \quad
+\text{pref}[i] = \text{pref}[i-1] + a_i \quad \text{para } i \ge 1
+\]
+Cada elemento indica la cantidad total de departamentos hasta ese piso.  
+
+2. Para cada carta $b_j$ usamos \textbf{búsqueda binaria} con \texttt{lower\_bound}:
+\[
+\text{piso} = \text{lower\_bound}(\text{pref.begin(), pref.end(), } b_j) - \text{pref.begin()}
+\]
+
+3. Calculamos el departamento dentro del piso:
+\[
+\text{depto} = b_j - (\text{piso}>0 ? \text{pref[piso-1]} : 0)
+\]
+
+---
+
+Código en C++
+\begin{verbatim}
+
+	void solve() {
+		ll n, m;
+		cin >> n >> m;
+		vector<ll> a(n), b(m);
+		for (int i = 0; i < n; i++) cin >> a[i];
+		for (int i = 0; i < m; i++) cin >> b[i];
+		
+		// Construir prefix sums
+		vector<ll> pref(n);
+		pref[0] = a[0];
+		for (int i = 1; i < n; i++) pref[i] = pref[i-1] + a[i];
+		
+		for (int i = 0; i < m; i++) {
+			// Encontrar piso usando búsqueda binaria
+			int piso = lower_bound(pref.begin(), pref.end(), b[i]) - pref.begin();
+			// Departamento dentro del piso
+			ll depto = b[i] - (piso > 0 ? pref[piso-1] : 0);
+			cout << piso + 1 << " " << depto << "\n";
+		}
+	}
+	
+	
+\end{verbatim}
+
+
+
+Ejemplo paso a paso
+\[
+a = [3,5,2] \implies pref = [3,8,10], \quad b = [1,4,9]
+\]
+
+\begin{tabular}{c|c|c|c}
+	Carta $b_j$ & Piso (0-based) & Piso (1-based) & Departamento \\
+	\hline
+	1 & 0 & 1 & 1 \\
+	4 & 1 & 2 & 1 \\
+	9 & 2 & 3 & 1
+\end{tabular}
+
+Complejidad
+\begin{itemize}
+	\item Construir prefix sums: $O(n)$
+	\item Cada carta: $O(\log n)$ con \texttt{lower\_bound}
+	\item Total: $O(n + m \log n)$
+\end{itemize}
+
+Tips
+\begin{itemize}
+	\item `lower\_bound` devuelve iterador, se resta `pref.begin()` para obtener índice.
+	\item Esta técnica combina \textbf{prefix sums} con \textbf{búsqueda binaria} para ubicar rápidamente rangos acumulados.
+\end{itemize}
+
+\section{Búsqueda binaria en la respuesta}
+
+\subsection{Caso general}
+\begin{lstlisting}[style=cppstyle, caption={Busqueda binaria en la respuesta}]
+	bool can(int mid) {
+		// Esta funcion debe responder si con mid como respuesta
+		// es posible cumplir con la condicion del problema
+		
+		// Implementar la logica del chequeo
+		
+		return true;
+	}
+	
+	int main(){
+		// Busqueda binaria
+		int low = 0, high = 1e9; // Ajustar limites segun el problema
+		int ans = -1;
+		
+		while (low <= high) {
+			int mid = (low + high) / 2;
+			
+			// si queremos el minimo que cumple
+			if (check(mid)) {
+				ans = mid;        
+				high = mid - 1;
+			} else {
+				low = mid + 1;
+			}
+			
+			// Si queres el maximo que cumple:
+			if (check(mid)) {
+				ans = mid;
+				low = mid + 1;
+			} else {
+				high = mid - 1;
+			}
+		}
+		
+		cout << ans << endl;
+	}
+	
+\end{lstlisting}
+
+\subsection{Ejemplo 1: Problema de Sumas}
+\begin{lstlisting}[style=cppstyle, caption={Problema de sumas con búsqueda binaria}]
+	ll n;
+	bool can(ll x, vll &a) {
+		ll cont = 0; // Sup. disponibles
+		fore(i, 0, n) {
+			if (x < a[i]) return false; 
+			cont += x - a[i];
+		}
+		return cont >= x;
+	}
+	
+	void solve() {
+		cin >> n; 
+		vll a(n); 
+		fore(i, 0, n) cin >> a[i]; 
+		
+		ll l = 0, r = 1e14, ans = 0;
+		while (l <= r) {
+			ll mid = (l + r) >> 1; 
+			if (can(mid, a)) {
+				ans = mid; 
+				r = mid - 1;
+			} else {
+				l = mid + 1;
+			}
+		} 
+		pri(ans);
+	}
+\end{lstlisting}
+
+\subsection{Ejemplo 2: Problema de Porcentajes}
+\begin{lstlisting}[style=cppstyle, caption={Problema de porcentajes con tickets}]
+	ll k, x, y, a, b, n;
+	vll pr;
+	
+	bool can(ll st) {
+		vll p(st);
+		for (int i = a - 1; i < st; i += a) p[i] += x;
+		for (int i = b - 1; i < st; i += b) p[i] += y;
+		sort(all(p), greater<ll>());
+		ll cur = 0;
+		fore(i, 0, st) cur += p[i] * pr[i] / 100;
+		return cur >= k;
+	}
+	
+	void solve() {
+		pr.clear();
+		cin >> n;
+		fore(i, 0, n) {
+			ll ai;
+			cin >> ai;
+			pr.pb(ai);
+		}
+		sort(all(pr), greater<int>()); 
+		cin >> x >> a >> y >> b >> k;
+		
+		ll l = 0, h = n, ans = -1;
+		while (l <= h) {
+			ll mid = l + (h - l) / 2;
+			if (can(mid)) {
+				ans = mid;
+				h = mid - 1;
+			} else {
+				l = mid + 1;
+			}
+		}
+		pri(ans);
+	}
+\end{lstlisting}
+
+\subsection{Ejemplo 3: Problema de Recursos}
+\begin{lstlisting}[style=cppstyle, caption={Problema de gestión de recursos}]
+	ll k, n; 
+	vi a, b; 
+	
+	bool can(ll mid) {
+		ll ka = k;
+		fore(i, 0, n) {
+			ll totact = a[i] * mid; 
+			if (totact > b[i]) {
+				ll rest = totact - b[i];
+				if (rest <= ka) {
+					ka -= rest;
+				} else {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	void solve() {
+		cin >> n >> k; 
+		a.resize(n);
+		b.resize(n);
+		fore(i, 0, n) cin >> a[i]; 
+		fore(i, 0, n) cin >> b[i]; 
+		
+		ll low = 0, high = 2e9 + 10;
+		ll res = -1;
+		
+		while (low <= high) {
+			ll mid = (low + high) / 2;
+			if (can(mid)) {
+				res = mid;
+				low = mid + 1; // Buscamos el MAXIMO
+			} else {
+				high = mid - 1;
+			}
+		}
+		pri(res);
+	}
+\end{lstlisting}
+
+\subsection{Consideraciones Importantes}
+\begin{itemize}
+	\item \textbf{Límites}: Definir correctamente \texttt{l} y \texttt{r} según el problema
+	\item \textbf{Función can}: Debe ser eficiente (generalmente $O(n)$ o $O(n \log n)$)
+	\item \textbf{Overflow}: Usar \texttt{mid = l + (r - l) / 2} para evitar overflow
+	\item \textbf{Tipo de búsqueda}: Decidir si se busca el mínimo o máximo que cumple
+\end{itemize}
+
+\subsection{Complejidad}
+La complejidad total es $O(T \times \log(\text{rango}) \times \text{complejidad de can})$, donde:
+\begin{itemize}
+	\item $T$: número de casos de prueba
+	\item \texttt{rango}: diferencia entre \texttt{r} y \texttt{l}
+	\item \texttt{can}: complejidad de la función de verificación
+\end{itemize}
+
+

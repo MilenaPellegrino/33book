@@ -1,0 +1,277 @@
+\chapter{Matemática}
+
+\section{Operaciones basicas}
+
+\subsection{Obtener $\pi$}
+\begin{lstlisting}[language=C++, caption={Obtener $\pi$}]
+	const double PI = 3.141592653589793;  //FORMA 1
+	double pi = M_PI; 	 //FORMA 2
+	
+\end{lstlisting}
+
+\subsection{Obtener la raiz cuadrada}
+Para calcular la raíz cuadrada de un número en C++, se utiliza la función \texttt{sqrt()}.
+
+\bigskip
+
+\textbf{Ejemplo:}
+
+\begin{lstlisting}[language=C++]
+	double x = 25.0;
+	double raiz = sqrt(x);
+\end{lstlisting}
+
+\bigskip
+
+\textbf{Notas importantes:}
+\begin{itemize}
+	\item El resultado puede guardarse en un \texttt{double} para conservar la precisión decimal.
+	\item Si se guarda en un tipo entero, la parte decimal se truncará (se corta sin redondeo).
+\end{itemize}
+
+Complejidad: \( O(\sqrt{n}) \)
+\begin{lstlisting}[language=C++, caption={Chequear si un número es primo}]
+	bool esPrimo(int n) {
+		if (n <= 1) return false;
+		if (n == 2) return true;
+		if (n % 2 == 0) return false;
+		for (int i = 3; i * i <= n; i += 2)
+		if (n % i == 0)
+		return false;
+		return true;
+	}
+\end{lstlisting}
+
+\section{Reglas de Divisibilidad}
+
+Para determinar si un número es divisible por otro sin necesidad de hacer la división, se pueden usar las siguientes reglas de divisibilidad:
+
+\subsection{Reglas de Divisibilidad Básicas}
+
+\begin{enumerate}
+	\item \textbf{Divisible por 1}: Todos los números son divisibles por 1.
+	\item \textbf{Divisible por 2}: Un número es divisible por 2 si su último dígito es par (0, 2, 4, 6, 8).
+	\item \textbf{Divisible por 3}: Un número es divisible por 3 si la suma de sus dígitos es divisible por 3.
+	\item \textbf{Divisible por 4}: Un número es divisible por 4 si el número formado por sus últimos dos dígitos es divisible por 4.
+	\item \textbf{Divisible por 5}: Un número es divisible por 5 si su último dígito es 0 o 5.
+	\item \textbf{Divisible por 6}: Un número es divisible por 6 si es divisible por 2 y por 3.
+	\item \textbf{Divisible por 7}: Hay varias reglas:
+	\begin{itemize}
+		\item \textbf{Regla 1}: Toma el último dígito, multiplícalo por 2 y réstalo del resto del número. Si el resultado es divisible por 7, entonces el número original también lo es.
+		\item \textbf{Regla 2}: Divide el número en bloques de 3 dígitos (de derecha a izquierda) y calcula la suma alternante de estos bloques. Si el resultado es divisible por 7, entonces el número original también lo es.
+	\end{itemize}
+	\item \textbf{Divisible por 8}: Un número es divisible por 8 si el número formado por sus últimos tres dígitos es divisible por 8.
+	\item \textbf{Divisible por 9}: Un número es divisible por 9 si la suma de sus dígitos es divisible por 9.
+	\item \textbf{Divisible por 10}: Un número es divisible por 10 si su último dígito es 0.
+\end{enumerate}
+
+\subsection{Reglas de Divisibilidad Menos Comunes}
+
+\begin{enumerate}
+	\item \textbf{Divisible por 11}:
+	\begin{itemize}
+		\item \textbf{Regla 1}: Suma los dígitos en posiciones impares y resta la suma de los dígitos en posiciones pares. Si el resultado es divisible por 11, entonces el número original también lo es.
+		\item \textbf{Regla 2}: Alternativamente, puedes usar la suma alternante de los dígitos.
+	\end{itemize}
+	\item \textbf{Divisible por 12}: Un número es divisible por 12 si es divisible por 3 y por 4.
+	\item \textbf{Divisible por 13}:
+	\begin{itemize}
+		\item \textbf{Regla 1}: Toma el último dígito, multiplícalo por 9 y réstalo del resto del número. Si el resultado es divisible por 13, entonces el número original también lo es.
+		\item \textbf{Regla 2}: Divide el número en bloques de 3 dígitos y calcula la suma alternante de estos bloques. Si el resultado es divisible por 13, entonces el número original también lo es.
+	\end{itemize}
+	\item \textbf{Divisible por 17}:
+	\begin{itemize}
+		\item \textbf{Regla 1}: Toma el último dígito, multiplícalo por 5 y réstalo del resto del número. Si el resultado es divisible por 17, entonces el número original también lo es.
+	\end{itemize}
+	\item \textbf{Divisible por 19}:
+	\begin{itemize}
+		\item \textbf{Regla 1}: Toma el último dígito, multiplícalo por 2 y súmalo al resto del número. Si el resultado es divisible por 19, entonces el número original también lo es.
+	\end{itemize}
+\end{enumerate}
+
+\subsection{Reglas de Divisibilidad para Números Primos Mayores}
+
+Para números primos mayores, como 23, 29, etc., las reglas pueden volverse más complejas y a menudo implican métodos similares a los usados para 7, 13, 17 y 19, pero con diferentes multiplicadores.
+
+\subsection{Métodos Generales para Verificar Divisibilidad}
+
+\begin{enumerate}
+	\item \textbf{División Directa}: La forma más directa de verificar la divisibilidad es realizar la división y ver si el residuo es cero.
+	\item \textbf{Uso de Factores}: Si un número es divisible por dos o más números coprimos, entonces es divisible por su producto. Por ejemplo, si un número es divisible por 3 y por 5, entonces es divisible por 15.
+\end{enumerate}
+
+\subsection{Generación de divisores}
+Para encontrar todos los divisores de un número $k$:
+\begin{lstlisting}[language=C++, caption={Generar los divisores de un numero}]
+	for (ll i = 1; i * i <= k; i++) {
+		if (k % i == 0) {
+			divs.push_back(i);
+			if (i != k / i) divs.push_back(k / i);
+		}
+	}
+\end{lstlisting}
+
+\section{Números Primos}
+
+\subsection{Chequear si un número es primo}
+
+Complejidad: \( O(\sqrt{n}) \)
+\begin{lstlisting}[language=C++, caption={Chequear si un número es primo}]
+	bool esPrimo(int n) {
+		if (n <= 1) return false;
+		if (n == 2) return true;
+		if (n % 2 == 0) return false;
+		for (int i = 3; i * i <= n; i += 2)
+		if (n % i == 0)
+		return false;
+		return true;
+	}
+\end{lstlisting}
+
+\subsection{Criba de Eratóstenes para factorizar números}
+
+\textbf{Uso} \\
+Guarda para cada número su \textbf{menor factor primo} (SPF, \textit{smallest prime factor}).
+Con eso, puedes factorizar cualquier número \(x \le n\) muy rápido.
+
+\begin{lstlisting}[language=C++, caption={Criba SPF + factorización en primos}]
+
+vector<int> spf; // spf[x] = menor factor primo de x
+
+void build_spf(int n) {
+	spf.assign(n + 1, 0);
+	for (int i = 2; i <= n; i++) {
+		if (spf[i] == 0) {
+			spf[i] = i; // i es primo
+			if (1LL * i * i <= n) {
+				for (long long j = 1LL * i * i; j <= n; j += i) {
+					if (spf[j] == 0) spf[j] = i;
+				}
+			}
+		}
+	}
+}
+
+vector<pair<int,int>> factorize(int x) {
+	vector<pair<int,int>> fac;
+	while (x > 1) {
+		int p = spf[x], e = 0;
+		while (x % p == 0) {
+			x /= p;
+			e++;
+		}
+		fac.push_back({p, e});
+	}
+	return fac;
+}
+
+int main() {
+	int n = 100;         // limite maximo que vas a factorizar
+	build_spf(n);
+
+	int x = 6;
+	auto f = factorize(x);
+
+	// salida: 6 = 2^1 * 3^1
+	cout << x << " = ";
+	for (int i = 0; i < (int)f.size(); i++) {
+		cout << f[i].first << "^" << f[i].second;
+		if (i + 1 < (int)f.size()) cout << " * ";
+	}
+}
+\end{lstlisting}
+
+\textbf{Complejidad:}
+\begin{itemize}
+	\item Preprocesamiento de la criba SPF hasta \(n\): \(O(n \log\log n)\).
+	\item Memoria: \(O(n)\).
+	\item Factorizar un número \(x\): \(O(k)\), donde \(k\) es la cantidad de factores primos (con multiplicidad). En práctica: muy rápido.
+\end{itemize}
+
+\section{Permutaciones}
+
+\subsection{Computar las permutaciones}
+
+Sea un arreglo \(A = [a_1, a_2, \dots, a_n]\). Queremos generar todas las permutaciones de sus elementos.
+
+\begin{lstlisting}[language=C++, caption={Chequear si un número es primo}]
+	#include <bits/stdc++.h>
+	using namespace std;
+	
+	int main() {
+		vector<int> A = {1, 2, 3};
+		sort(A.begin(), A.end()); // ordenar antes de usar next_permutation
+		
+		do {
+			for (int x : A) cout << x << " ";
+			cout << "\n";
+		} while (next_permutation(A.begin(), A.end()));
+		
+		return 0;
+	}
+\end{lstlisting}
+
+\section{Geometría}
+
+\subsection{Distancia entre dos puntos}
+Dados dos puntos \((x_1, y_1)\) y \((x_2, y_2)\), la distancia euclidiana es:
+
+\[
+d = \sqrt{(x_1-x_2)^2 + (y_1-y_2)^2}
+\]
+
+En programación competitiva, muchas veces conviene usar la distancia al cuadrado (para evitar \texttt{sqrt}):
+
+\[
+d^2 = (x_1-x_2)^2 + (y_1-y_2)^2
+\]
+
+\begin{lstlisting}[language=C++, caption={Distancia al cuadrado entre dos puntos}]
+	ll dist2 = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+\end{lstlisting}
+
+\subsection{Triángulos}
+Un triángulo queda determinado si conocés:
+\begin{itemize}
+	\item 3 lados (SSS)
+	\item 2 lados + 1 ángulo (SAS)
+	\item 2 ángulos + 1 lado (ASA / AAS)
+\end{itemize}
+
+\subsubsection{Ley de Cosenos}
+Se usa cuando tenés lados y querés ángulos, o viceversa:
+
+\[
+c^2 = a^2 + b^2 - 2ab\cos(C)
+\]
+
+\textbf{Sirve para:}
+\begin{itemize}
+	\item SSS \(\to\) sacar ángulos
+	\item SAS \(\to\) sacar el lado faltante
+\end{itemize}
+
+\textbf{Ejemplo (CP):}
+\begin{lstlisting}[language=C++, caption={Ley de Cosenos: obtener un ángulo}]
+	double C = acos((a * a + b * b - c * c) / (2.0 * a * b));
+\end{lstlisting}
+
+\subsubsection{Ley de Senos}
+Cuando tenés ángulos y lados mezclados:
+
+\[
+\frac{\sin(A)}{a} = \frac{\sin(B)}{b} = \frac{\sin(C)}{c}
+\]
+
+\textbf{Sirve para:}
+\begin{itemize}
+	\item ASA / AAS \(\to\) sacar lados
+	\item completar triángulos
+\end{itemize}
+
+\textbf{Ejemplo:}
+\begin{lstlisting}[language=C++, caption={Ley de Senos: obtener un lado}]
+	double b = a * sin(B) / sin(A);
+\end{lstlisting}
+
+
