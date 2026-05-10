@@ -44,92 +44,267 @@ entonces \texttt{getline()} puede leer una línea vacía. Para evitarlo, se debe
 \subsection{Conversiones }
 
 \subsubsection{String a Numero y de Numero a String }
+
 \begin{itemize}
-	\item \textbf{De string a int}: \texttt{int x = stoi("123");}
-	\item \textbf{De string a long long}: \texttt{ll y = stoll("9876543210");} 
-	\item \textbf{De numero a string}: \texttt{string s = to\_string(x);}
+	\item \textbf{De string a int:}
+	\texttt{int x = stoi("123");}
+
+	\item \textbf{De string a long long:}
+	\texttt{ll x = stoll("123456789");}
+
+	\item \textbf{De string a double:}
+	\texttt{double x = stod("3.14");}
+
+	\item \textbf{De string a float:}
+	\texttt{float x = stof("3.14");}
+
+	\item \textbf{De string a long double:}
+	\texttt{long double x = stold("3.14");}
+
+	\item \textbf{De numero a string:}
+	\texttt{string s = to\_string(x);}
 \end{itemize}
 
-\subsubsection{Conversiones de char a número posicionales }
+\subsubsection{Char a Numero y de Numero a Char}
 
-\paragraph{De char numeral a número:}
-Si el \texttt{char} representa un dígito (por ejemplo, \texttt{'0'} a \texttt{'9'}), se puede obtener el valor numérico restando el carácter \texttt{'0'}:
+\paragraph{De char numeral a número}
+Si el \texttt{char} representa un dígito (\texttt{'0'} a \texttt{'9'}):
 
 \begin{lstlisting}[language=C++]
-	ll x = s[0] - '0'; // convierte '0' a 0, '5' a 5, etc.
+	int x = c - '0';
 \end{lstlisting}
 
-\paragraph{De char minúscula a número ($a \to 1$, $b \to 2$, $c \to 3$, ...):}
-Dado un carácter en minúscula \( c \in \{a, b, \dots, z\} \), se puede obtener su posición en el alfabeto con:
+Ejemplo:
+\begin{lstlisting}[language=C++]
+	char c = '7';
+	int x = c - '0'; // 7
+\end{lstlisting}
+
+\paragraph{De número a char numeral}
+
+\begin{lstlisting}[language=C++]
+	char c = x + '0';
+\end{lstlisting}
+
+Ejemplo:
+\begin{lstlisting}[language=C++]
+	int x = 7;
+	char c = x + '0'; // '7'
+\end{lstlisting}
+
+\subsubsection{Char a Posición Alfabética y Viceversa}
+
+\paragraph{Minúscula a número ($a \to 1$, $b \to 2$, \dots)}
 
 \[
 \text{posición}(c) = c - 'a' + 1
 \]
 
-Ejemplos:
 \begin{lstlisting}[language=C++]
-	int pos_b = 'b' - 'a' + 1; // pos_b == 2
-	int pos_z = 'z' - 'a' + 1; // pos_z == 26
+	int pos = c - 'a' + 1;
 \end{lstlisting}
 
-\paragraph{De char mayúscula a número ($A \to 1$, $B \to 2$, $C \to 3$, ...):}
-Para caracteres en mayúscula \( C \in \{A, B, \dots, Z\} \), se usa la misma lógica:
+\paragraph{Número a minúscula ($1 \to a$, $2 \to b$, \dots)}
+
+\begin{lstlisting}[language=C++]
+	char c = pos - 1 + 'a';
+\end{lstlisting}
+
+\paragraph{Mayúscula a número ($A \to 1$, $B \to 2$, \dots)}
 
 \[
 \text{posición}(C) = C - 'A' + 1
 \]
 
-Ejemplos:
 \begin{lstlisting}[language=C++]
-	int pos_B = 'B' - 'A' + 1; // pos_B == 2
-	int pos_Z = 'Z' - 'A' + 1; // pos_Z == 26
+	int pos = c - 'A' + 1;
 \end{lstlisting}
 
-\subsubsection{De mayuscula a minuscula y visceversa}
+\paragraph{Número a mayúscula ($1 \to A$, $2 \to B$, \dots)}
 
+\begin{lstlisting}[language=C++]
+	char c = pos - 1 + 'A';
+\end{lstlisting}
+
+\subsubsection{Mayúscula a Minúscula y Viceversa}
 
 \begin{itemize}
-	\item \textbf{Convertir un carácter a mayúscula:}
-	\begin{lstlisting}[language=C++]
-		char c = 'b';
-		c = toupper(c); // c ahora es 'B'
-	\end{lstlisting}
-	
-	\item \textbf{Convertir un carácter a minúscula:}
-	\begin{lstlisting}[language=C++]
-		char c = 'G';
-		c = tolower(c); // c ahora es 'g'
-	\end{lstlisting}
+	\item \textbf{Convertir a mayúscula}
+\begin{lstlisting}[language=C++]
+	char c = 'b';
+	c = toupper(c); // 'B'
+\end{lstlisting}
+
+	\item \textbf{Convertir a minúscula}
+\begin{lstlisting}[language=C++]
+	char c = 'G';
+	c = tolower(c); // 'g'
+\end{lstlisting}
+
+	\item \textbf{Verificar si es mayúscula}
+\begin{lstlisting}[language=C++]
+	isupper(c)
+\end{lstlisting}
+
+	\item \textbf{Verificar si es minúscula}
+\begin{lstlisting}[language=C++]
+	islower(c)
+\end{lstlisting}
 \end{itemize}
 
-\subsubsection{Conversiones a binarias y visceversas}
+\subsubsection{Char, ASCII y Viceversa}
 
-\paragraph{Convertir número a string binario:}
-Para convertir un número entero a su representación binaria en forma de string, se puede usar la función:
-
-\begin{lstlisting}[language=C++]
-	
-	ll num = 13;
-	string binary = bitset<64>(num).to_string(); // "0000...1101"
-	
-	// O sin ceros a la izquierda:
-	binary = bitset<64>(num).to_string();
-	binary.erase(0, binary.find('1')); // remueve ceros iniciales
-\end{lstlisting}
-
-\paragraph{Convertir string binario a número:}
-Para convertir un string que representa un número binario a su valor decimal, se usa \texttt{stoll()} con base 2:
+\paragraph{Char a código ASCII}
 
 \begin{lstlisting}[language=C++]
-	string binary = "1101";
-	ll num = stoll(binary, nullptr, 2); // num == 13
-	
-	// Otros ejemplos:
-	ll a = stoll("0101", nullptr, 2);  // a == 5
-	ll b = stoll("11111111", nullptr, 2); // b == 255
+	int ascii = (int)c;
 \end{lstlisting}
 
-\textbf{Nota:} El parámetro \texttt{nullptr} indica que no se necesita guardar la posición del primer carácter no convertido, y el \texttt{2} especifica que se usa base binaria.
+\paragraph{ASCII a char}
+
+\begin{lstlisting}[language=C++]
+	char c = (char)x;
+\end{lstlisting}
+
+Ejemplo:
+\begin{lstlisting}[language=C++]
+	char c = 'A';
+	int x = (int)c; // 65
+
+	char d = (char)65; // 'A'
+\end{lstlisting}
+
+\subsubsection{String y Char}
+
+\paragraph{Char a string}
+
+\begin{lstlisting}[language=C++]
+	char c = 'a';
+	string s(1, c); // "a"
+\end{lstlisting}
+
+O también:
+
+\begin{lstlisting}[language=C++]
+	string s = string(1, c);
+\end{lstlisting}
+
+\paragraph{String de longitud 1 a char}
+
+\begin{lstlisting}[language=C++]
+	char c = s[0];
+\end{lstlisting}
+
+\subsubsection{String a Vector de Chars y Viceversa}
+
+\paragraph{String a \texttt{vector<char>}}
+
+\begin{lstlisting}[language=C++]
+	string s = "hola";
+	vector<char> v(s.begin(), s.end());
+\end{lstlisting}
+
+\paragraph{\texttt{vector<char>} a string}
+
+\begin{lstlisting}[language=C++]
+	string s(v.begin(), v.end());
+\end{lstlisting}
+
+\subsubsection{Numero Decimal a Otras Bases}
+
+\paragraph{Decimal a binario}
+
+\begin{lstlisting}[language=C++]
+	ll x = 13;
+	string s = bitset<64>(x).to_string();
+
+	s.erase(0, s.find('1'));
+\end{lstlisting}
+
+\paragraph{Decimal a hexadecimal}
+
+\begin{lstlisting}[language=C++]
+	stringstream ss;
+	ss << hex << x;
+	string hexNum = ss.str();
+\end{lstlisting}
+
+\paragraph{Decimal a octal}
+
+\begin{lstlisting}[language=C++]
+	stringstream ss;
+	ss << oct << x;
+	string octNum = ss.str();
+\end{lstlisting}
+
+\subsubsection{String en Base N a Decimal}
+
+\paragraph{Binario a decimal}
+
+\begin{lstlisting}[language=C++]
+	ll x = stoll(binary, nullptr, 2);
+\end{lstlisting}
+
+\paragraph{Hexadecimal a decimal}
+
+\begin{lstlisting}[language=C++]
+	ll x = stoll(hexString, nullptr, 16);
+\end{lstlisting}
+
+\paragraph{Octal a decimal}
+
+\begin{lstlisting}[language=C++]
+	ll x = stoll(octalString, nullptr, 8);
+\end{lstlisting}
+
+\subsubsection{Numeros entre Tipos}
+
+\paragraph{int a long long}
+
+\begin{lstlisting}[language=C++]
+	ll x = (ll)a;
+\end{lstlisting}
+
+\paragraph{double a int}
+
+\begin{lstlisting}[language=C++]
+	int x = (int)d;
+\end{lstlisting}
+
+\paragraph{int a double}
+
+\begin{lstlisting}[language=C++]
+	double x = (double)a;
+\end{lstlisting}
+
+\paragraph{División real entre enteros}
+
+\begin{lstlisting}[language=C++]
+	double ans = (double)a / b;
+\end{lstlisting}
+
+\subsubsection{String a Array de Digitos}
+
+\paragraph{String de dígitos a \texttt{vector<int>}}
+
+\begin{lstlisting}[language=C++]
+	string s = "12345";
+	vector<int> digits;
+
+	for(char c : s){
+		digits.push_back(c - '0');
+	}
+\end{lstlisting}
+
+\paragraph{\texttt{vector<int>} de dígitos a string}
+
+\begin{lstlisting}[language=C++]
+	string s;
+
+	for(int d : digits){
+		s += char(d + '0');
+	}
+\end{lstlisting}
 
 \subsection*{Ordenar partes (subrangos) de un vector}
 
