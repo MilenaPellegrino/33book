@@ -29,17 +29,53 @@ Para calcular la raíz cuadrada de un número en C++, se utiliza la función \te
 	\item Si se guarda en un tipo entero, la parte decimal se truncará (se corta sin redondeo).
 \end{itemize}
 
-Complejidad: \( O(\sqrt{n}) \)
-\begin{lstlisting}[language=C++, caption={Chequear si un número es primo}]
-	bool esPrimo(int n) {
-		if (n <= 1) return false;
-		if (n == 2) return true;
-		if (n % 2 == 0) return false;
-		for (int i = 3; i * i <= n; i += 2)
-		if (n % i == 0)
-		return false;
-		return true;
-	}
+\subsection{Máximo Común Divisor (MCD) y Mínimo Común Múltiplo (MCM)}
+El Máximo Común Divisor (MCD) de dos enteros $a$ y $b$ es el mayor entero que divide a ambos sin dejar residuo. El Mínimo Común Múltiplo (MCM) es el menor entero positivo que es divisible por ambos.
+
+\subsubsection*{Relación fundamental}
+Existe una relación directa entre el MCD y el MCM de dos números $a$ y $b$:
+\[
+a \times b = \text{MCD}(a, b) \times \text{MCM}(a, b)
+\]
+De aquí despejamos el MCM:
+\[
+\text{MCM}(a, b) = \frac{a \times b}{\text{MCD}(a, b)}
+\]
+Para evitar desbordamiento de enteros (overflow) al multiplicar $a \times b$, es una buena práctica realizar la división primero:
+\[
+\text{MCM}(a, b) = \left( \frac{a}{\text{MCD}(a, b)} \right) \times b
+\]
+
+\subsubsection*{Implementación en C++17 (Estándar)}
+Desde C++17, las funciones \texttt{std::gcd} y \texttt{std::lcm} están disponibles en la cabecera \texttt{<numeric>}:
+\begin{lstlisting}[language=C++, caption={MCD y MCM con la librería estándar de C++17}]
+#include <iostream>
+#include <numeric> // Cabecera necesaria
+
+using namespace std;
+
+int main() {
+    long long a = 12, b = 18;
+    long long mcd = std::gcd(a, b); // Retorna 6
+    long long mcm = std::lcm(a, b); // Retorna 36
+    
+    cout << "MCD: " << mcd << ", MCM: " << mcm << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\subsubsection*{Implementación Manual (Algoritmo de Euclides)}
+Si estás usando una versión anterior a C++17 o necesitas programarlo a mano, puedes usar el algoritmo de Euclides de forma recursiva o iterativa:
+\begin{lstlisting}[language=C++, caption={Implementación manual de MCD y MCM}]
+// Complejidad: O(log(min(a, b)))
+long long gcd(long long a, long long b) {
+    return b == 0 ? a : gcd(b, a % b);
+}
+
+long long lcm(long long a, long long b) {
+    if (a == 0 || b == 0) return 0;
+    return (a / gcd(a, b)) * b;
+}
 \end{lstlisting}
 
 \section{Reglas de Divisibilidad}
@@ -210,6 +246,79 @@ Sea un arreglo \(A = [a_1, a_2, \dots, a_n]\). Queremos generar todas las permut
 		return 0;
 	}
 \end{lstlisting}
+
+\section{Combinatoria}
+
+\subsection{Triángulo de Pascal}
+El Triángulo de Pascal aparece muchísimo en programación competitiva porque permite calcular combinaciones binomiales de manera eficiente y simple.
+
+\subsubsection*{Definición}
+Cada número es la suma de los dos que tiene arriba:
+\[
+\begin{array}{ccccccccccc}
+&&&&&1&&&&&\\
+&&&&1&&1&&&&\\
+&&&1&&2&&1&&&\\
+&&1&&3&&3&&1&&\\
+&1&&4&&6&&4&&1&\\
+1&&5&&10&&10&&5&&1
+\end{array}
+\]
+
+La fila $n$ contiene los coeficientes binomiales:
+\[
+\binom{n}{0},\binom{n}{1},\binom{n}{2},\dots,\binom{n}{n}
+\]
+
+Por ejemplo, la fila $5$:
+\[
+1\;5\;10\;10\;5\;1
+\]
+corresponde a:
+\[
+\binom{5}{0},\binom{5}{1},\binom{5}{2},\binom{5}{3},\binom{5}{4},\binom{5}{5}
+\]
+
+\subsubsection*{Relación fundamental}
+\[
+\binom{n}{k} = \binom{n-1}{k-1} + \binom{n-1}{k}
+\]
+Esta ecuación es exactamente la regla del triángulo de Pascal.
+
+\subsubsection*{Construcción en $O(n^2)$}
+\begin{lstlisting}[language=C++, caption={Construcción del triángulo de Pascal}]
+vector<vector<long long>> C(n + 1, vector<long long>(n + 1));
+
+for (int i = 0; i <= n; i++) {
+	C[i][0] = C[i][i] = 1;
+
+	for (int j = 1; j < i; j++) {
+		C[i][j] = C[i - 1][j - 1] + C[i - 1][j];
+	}
+}
+\end{lstlisting}
+
+Luego, para realizar consultas como \(\binom{5}{2}\):
+\begin{lstlisting}[language=C++, caption={Ejemplo de consulta}]
+cout << C[5][2]; // imprime 10
+\end{lstlisting}
+
+\subsubsection*{Propiedades útiles}
+\begin{itemize}
+	\item \textbf{Suma de una fila}:
+	\[
+	\sum_{k=0}^{n} \binom{n}{k} = 2^n
+	\]
+	Ejemplo: la fila $1\;4\;6\;4\;1$ suma $16 = 2^4$.
+	
+	\item \textbf{Coeficientes del binomio}:
+	El binomio $(a+b)^n$ tiene coeficientes dados por la fila $n$.
+	Por ejemplo:
+	\[
+	(a+b)^4 = a^4 + 4a^3b + 6a^2b^2 + 4ab^3 + b^4
+	\]
+	Los coeficientes $1\;4\;6\;4\;1$ provienen de la fila 4 de Pascal.
+\end{itemize}
 
 \section{Geometría}
 

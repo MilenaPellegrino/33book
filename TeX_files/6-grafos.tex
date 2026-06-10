@@ -572,3 +572,199 @@ La función principal de la solución es \texttt{topological\_sort}, que inicial
 
 Vale la pena señalar que cuando el grafo \textbf{no} es acíclico, el resultado de \texttt{topological\_sort} aún sería algo significativo en el sentido de que si un vértice $u$ es alcanzable desde el vértice $v$, pero no al revés, el vértice $v$ siempre aparecerá primero en el array resultante.
 
+\section{Componentes conexas}
+\subsection*{Obtener componentes conexas diferentes de un grafo}
+\begin{lstlisting}[language=C++, caption={Código para obtener componentes conexas}]
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<vector<int>> adj;
+vector<bool> vis;
+
+void dfs(int u, vector<int>& componente) {
+    vis[u] = true;
+    componente.push_back(u);
+    for (int v : adj[u]) {
+        if (!vis[v]) {
+            dfs(v, componente);
+        }
+    }
+}
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+
+    adj.resize(n);
+    vis.assign(n, false);
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        // si los nodos están numerados de 0 a n-1
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    vector<vector<int>> componentes;
+    for (int i = 0; i < n; i++) {
+        if (!vis[i]) {
+            vector<int> componente;
+            dfs(i, componente);
+            componentes.push_back(componente);
+        }
+    }
+
+    cout << "Cantidad de componentes: " << componentes.size() << "\n\n";
+    for (size_t i = 0; i < componentes.size(); i++) {
+        cout << "Componente " << i + 1 << ": ";
+        for (int nodo : componentes[i]) {
+            cout << nodo << " ";
+        }
+        cout << "\n";
+    }
+}
+\end{lstlisting}
+
+\subsection*{Ejemplo}
+Entrada:
+\begin{verbatim}
+7 4
+0 1
+1 2
+3 4
+5 6
+\end{verbatim}
+
+Salida posible:
+\begin{verbatim}
+Cantidad de componentes: 3
+Componente 1: 0 1 2
+Componente 2: 3 4
+Componente 3: 5 6
+\end{verbatim}
+
+\subsection*{Mapeo rápido de nodo a componente}
+Se puede mantener un vector \texttt{vector<int> comp(n, -1);} y asignar dentro del DFS:
+\begin{lstlisting}[language=C++,caption=Asignación de componente]
+comp[u] = id_componente;
+\end{lstlisting}
+Esto permite conocer en $O(1)$ a qué componente pertenece cada vértice, útil en muchos problemas de programación competitiva.
+
+\section{Matching (Algoritmo Húngaro)}
+\subsection*{¿Para qué sirve el algoritmo Húngaro?}
+El algoritmo húngaro resuelve el \textit{problema de asignación}: dadas $n$ tareas y $n$ trabajadores (o $n$ filas y $n$ columnas de una matriz de costos), se desea asignar cada tarea a un trabajador de forma que se minimice la suma total de los costos. En términos de grafos, es encontrar un \textit{matching perfecto} de peso mínimo en un grafo bipartito completo.
+
+Este problema aparece frecuentemente en programación competitiva, por ejemplo para:
+\begin{itemize}
+  \item Asignar trabajos a máquinas minimizando el tiempo total.
+  \item Emparejar puntos de dos imágenes minimizando la suma de distancias.
+  \item Resolver sub-problemas de coloreado de árboles donde los colores de los hijos se asignan mediante un coste.
+\end{itemize}
+
+\subsection*{Cómo funciona el algoritmo}
+El algoritmo mantiene dos potenciales $u[i]$ (filas) y $v[j]$ (columnas) con la condición $u[i]+v[j]\leq A[i][j]$. Las aristas donde la igualdad se cumple son rígidas y forman un grafo $H$. Se busca incrementar el tamaño del matching máximo de $H$ usando caminos aumentantes (Kuhn). Si no hay camino aumentante, se reajusta el potencial aumentando $u$ y disminuyendo $v$ en la cantidad mínima $\Delta$ que permite crear nuevas aristas rígidas. Repetimos hasta obtener un matching perfecto. La versión optimizada tiene complejidad $O(n^3)$.
+
+\subsection*{Implementación en C++ (versión compacta)}
+\begin{lstlisting}[language=C++,caption=Implementación del algoritmo Húngaro]
+#include <bits/stdc++.h>
+using namespace std;
+
+#define fore(i,a,b) for(ll i=(a);i<(b);i++)
+#define all(x) (x).begin(), (x).end()
+#define pb push_back 
+#define fst first 
+#define snd second 
+#define sz(x) ((int)x.size())
+#define FIN ios::sync_with_stdio(0);cin.tie(0);cout.tie(0);
+
+using ll = long long; 
+typedef vector<double> vi; 
+
+int n, k;
+vector<vector<double>> g;
+vector<double> mt;
+vector<bool> used;
+
+const double INF = 1e9;
+
+pair<double, vector<int>> hungarian(const vector<vector<double>>& cost) {
+    int n = cost.size();
+    int m = cost[0].size();
+    vector<double> u(n + 1, 0), v(m + 1, 0);
+    vector<int> p(m + 1, 0), ans(n + 1, 0);
+    for (int i = 1; i <= n; ++i) {
+        p[0] = i;
+        int j0 = 0;
+        vector<double> min_v(m + 1, INF);
+        vector<int> used(m + 1, 0);
+        vector<int> way(m + 1, 0);
+        do {
+            used[j0] = 1;
+            int i0 = p[j0];
+            int j1 = 0;
+            double delta = INF;
+            for (int j = 1; j <= m; ++j) if (!used[j]) {
+                double cur = cost[i0-1][j-1] - u[i0] - v[j];
+                if (cur < min_v[j]) { min_v[j] = cur; way[j] = j0; }
+                if (min_v[j] < delta) { delta = min_v[j]; j1 = j; }
+            }
+            for (int j = 0; j <= m; ++j) {
+                if (used[j]) { u[p[j]] += delta; v[j] -= delta; }
+                else min_v[j] -= delta;
+            }
+            j0 = j1;
+        } while (p[j0] != 0);
+        do {
+            int j1 = way[j0];
+            p[j0] = p[j1];
+            j0 = j1;
+        } while (j0);
+    }
+    vector<int> matching(n);
+    for (int j = 1; j <= m; ++j) if (p[j]) matching[p[j]-1] = j-1;
+    double total_cost = -v[0];
+    return {total_cost, matching};
+}
+
+int main(){
+    FIN;
+    ll n; cin>>n; 
+    g.resize(n, vector<double>(n));
+    fore(i,0,n){
+        fore(j,0,n){
+            ll num; cin>>num; 
+            double num2 = log(num); 
+            num2 *= -1;
+            g[i][j] = num2;
+        }
+    }
+    auto [min_cost, assignment] = hungarian(g);
+    vector<pair<int,int>> res;
+    for (int i = 0; i < (int)assignment.size(); ++i) {
+        res.push_back({assignment[i] + 1, i + 1}); // (columna, fila)
+    }
+    sort(all(res));
+    for (auto [col, fila] : res) {
+        cout << fila << " ";
+    }
+    cout << "\n";
+    return 0;
+}
+\end{lstlisting}
+
+\subsection*{Explicación paso a paso}
+\begin{enumerate}
+    \item \textbf{Lectura de la matriz de costos}: en el programa se lee una matriz $n\times n$ y se transforma cada valor $c$ en $-\log(c)$, para convertir un problema de \textbf{maximizar producto} en uno de \textbf{minimizar suma}.
+    \item \textbf{Llamada a} \texttt{hungarian}: la función devuelve el coste mínimo y el vector \texttt{assignment} donde \texttt{assignment[i]} indica la columna asignada a la fila $i$.
+    \item \textbf{Construcción de la salida}: se crea un vector de pares \texttt{(columna, fila)}, se ordena por columna y se imprimen las filas en orden, tal como se suele requerir en concursos.
+\end{enumerate}
+
+\subsection*{Cuándo usarlo}
+\begin{itemize}
+    \item Cuando el número de filas y columnas es pequeño a mediano ($n \leq 500$ suele ser cómodo).
+    \item Cuando se necesita la solución exacta del problema de asignación, no una heurística.
+    \item En problemas donde el coste se define por distancias euclidianas, log-probabilidades, pesos de aristas, etc.
+\end{itemize}
+
+El algoritmo húngaro es una herramienta esencial en la caja de trucos de cualquier competidor de programación competitiva.
