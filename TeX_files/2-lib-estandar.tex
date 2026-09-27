@@ -101,6 +101,29 @@ Almacena valores unicos de un determinado tipo, ordenados automaticamente.
 	\item \texttt{unordered\_set}: Operaciones en $\mathcal{O}(1)$ promedio, pero sin orden.
 \end{itemize}
 
+\section{Enteros de 128 bits}
+En GCC y Clang se puede usar \texttt{\_\_int128} y \texttt{\_\_uint128\_t} para trabajar con enteros de 128 bits. No forman parte del estándar de C++, pero son muy útiles cuando \texttt{long long} no alcanza.
+
+\subsection{Entero con signo}
+\begin{lstlisting}[language=C++, caption={Entero de 128 bits con signo}]
+using i128 = __int128_t;
+\end{lstlisting}
+
+Rango aproximado: \([ -2^{127}, 2^{127} - 1 ] \approx \pm 1.70 \times 10^{38}\).
+
+\subsection{Entero sin signo}
+\begin{lstlisting}[language=C++, caption={Entero de 128 bits sin signo}]
+using u128 = __uint128_t;
+\end{lstlisting}
+
+Rango: \([0, 2^{128} - 1] \approx 3.4 \times 10^{38}\).
+
+\subsection{Notas importantes}
+\begin{itemize}
+\item \texttt{cin} y \texttt{cout} no saben leer ni imprimir \texttt{\_\_int128} directamente.
+\item Si necesitás mostrarlo por pantalla, hay que convertirlo a \texttt{string} manualmente.
+\end{itemize}
+
 \section{Representación Binaria en C++}
 \subsection{Mostrar un número en binario}
 

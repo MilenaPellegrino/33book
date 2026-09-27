@@ -384,3 +384,180 @@ Cuando tenés ángulos y lados mezclados:
 \end{lstlisting}
 
 
+\section{Transformada Rápida de Fourier (FFT)}
+
+La FFT permite multiplicar dos polinomios de grado $n$ en $O(n \log n)$, mucho mejor que la multiplicación ingenua $O(n^2)$. También se usa para multiplicar números grandes y para \textbf{convolución} de secuencias.
+
+\subsection{Idea general}
+
+Dados dos polinomios $A$ y $B$, queremos calcular $C = A \cdot B$. El truco es:
+
+\begin{enumerate}
+    \item Evaluar $A$ y $B$ en $n$ puntos especiales (las raíces $n$-ésimas de la unidad): $O(n \log n)$
+    \item Multiplicar los valores punto a punto: $O(n)$
+    \item Recuperar los coeficientes de $C$ con la DFT inversa: $O(n \log n)$
+\end{enumerate}
+
+\subsection{Transformada Discreta de Fourier (DFT)}
+
+Sea $A(x) = a_0 + a_1 x + \dots + a_{n-1} x^{n-1}$ un polinomio de grado $n-1$, donde $n$ es potencia de $2$.
+
+Las \textbf{raíces $n$-ésimas de la unidad} son los $n$ números complejos:
+\[
+w_n^k = e^{\frac{2\pi i k}{n}} = \cos\!\left(\frac{2\pi k}{n}\right) + i\,\sin\!\left(\frac{2\pi k}{n}\right), \quad k = 0, 1, \dots, n-1
+\]
+
+La \textbf{DFT} del vector de coeficientes $(a_0, \dots, a_{n-1})$ es el vector de valores:
+\[
+y_k = A(w_n^k) = \sum_{j=0}^{n-1} a_j \, w_n^{jk}, \quad k = 0, \dots, n-1
+\]
+
+La \textbf{DFT inversa} recupera los coeficientes a partir de los valores:
+\[
+a_j = \frac{1}{n} \sum_{k=0}^{n-1} y_k \, w_n^{-jk}
+\]
+
+Es decir, la DFT inversa es igual a la DFT pero usando $w_n^{-1}$ y dividiendo por $n$ al final.
+
+\subsection{Multiplicación de polinomios con DFT}
+
+Sean dos polinomios $A$ y $B$. Para calcular $C = A \cdot B$:
+\[
+C = \text{DFT}^{-1}\!\left(\text{DFT}(A) \cdot \text{DFT}(B)\right)
+\]
+donde el producto del medio es elemento a elemento. Esto funciona porque evaluar en los mismos puntos y multiplicar los valores equivale a multiplicar los polinomios.
+
+\subsection{Algoritmo: FFT recursiva (Cooley-Tukey)}
+
+La clave del algoritmo es dividir el polinomio en partes par e impar:
+\[
+A(x) = A_{\text{par}}(x^2) + x \cdot A_{\text{impar}}(x^2)
+\]
+donde $A_{\text{par}}$ tiene los coeficientes de índice par y $A_{\text{impar}}$ los de índice impar. Se aplica recursivamente, reduciendo el problema de tamaño $n$ a dos de tamaño $n/2$.
+
+\begin{lstlisting}[style=cppstyle, caption={FFT recursiva de Cooley-Tukey}]
+using cd = complex<double>;
+const double PI = acos(-1.0);
+
+// fft(a, false) -> DFT directa
+// fft(a, true)  -> DFT inversa
+void fft(vector<cd>& a, bool inv) {
+    int n = a.size();
+    if (n == 1) return;
+
+    // Separar coeficientes pares e impares
+    vector<cd> a0(n / 2), a1(n / 2);
+    for (int i = 0; i < n / 2; i++) {
+        a0[i] = a[2 * i];
+        a1[i] = a[2 * i + 1];
+    }
+
+    // Llamadas recursivas
+    fft(a0, inv);
+    fft(a1, inv);
+
+    // Raiz primitiva n-esima de la unidad
+    double ang = 2 * PI / n * (inv ? -1 : 1);
+    cd w(1), wn(cos(ang), sin(ang));
+
+    for (int i = 0; i < n / 2; i++) {
+        a[i]         = a0[i] + w * a1[i];
+        a[i + n / 2] = a0[i] - w * a1[i];
+        if (inv) {
+            a[i]         /= 2;
+            a[i + n / 2] /= 2;
+        }
+        w *= wn;
+    }
+}
+\end{lstlisting}
+
+\textbf{Complejidad:} $O(n \log n)$ tiempo y $O(n)$ espacio extra (por la recursión).
+
+\subsection{Función \texttt{multiply}: convolución de polinomios}
+
+Dados los vectores de coeficientes de $A$ y $B$, devuelve los coeficientes del producto $C = A \cdot B$.
+
+\begin{lstlisting}[style=cppstyle, caption={Multiplicacion de polinomios con FFT}]
+// Recibe coeficientes de A y B (indice = grado del termino)
+// Devuelve coeficientes de C = A * B
+vector<ll> multiply(vector<ll>& fa, vector<ll>& fb) {
+    vector<cd> a(fa.begin(), fa.end());
+    vector<cd> b(fb.begin(), fb.end());
+
+    // n debe ser potencia de 2 y mayor que deg(A) + deg(B)
+    int n = 1;
+    while (n < (int)(fa.size() + fb.size()))
+        n <<= 1;
+    a.resize(n);
+    b.resize(n);
+
+    // DFT directa de A y B
+    fft(a, false);
+    fft(b, false);
+
+    // Multiplicacion punto a punto
+    for (int i = 0; i < n; i++)
+        a[i] *= b[i];
+
+    // DFT inversa
+    fft(a, true);
+
+    // Pasar a enteros (redondear para evitar error de punto flotante)
+    vector<ll> res(n);
+    for (int i = 0; i < n; i++)
+        res[i] = llround(a[i].real());
+
+    return res;
+}
+\end{lstlisting}
+
+\subsubsection*{Ejemplo de uso}
+
+\begin{lstlisting}[style=cppstyle, caption={Multiplicar $(1 + 2x + 3x^2) \cdot (4 + 5x)$}]
+    // A(x) = 1 + 2x + 3x^2  ->  coeficientes: {1, 2, 3}
+    // B(x) = 4 + 5x          ->  coeficientes: {4, 5}
+    // C(x) = 4 + 13x + 22x^2 + 15x^3
+
+    vector<ll> a = {1, 2, 3};
+    vector<ll> b = {4, 5};
+    auto c = multiply(a, b);
+    // c = {4, 13, 22, 15, 0, 0, 0, 0}
+    // (los ceros del final son padding, ignorarlos)
+\end{lstlisting}
+
+\subsection{Convolución para contar coincidencias}
+
+Un uso muy frecuente en competencia: dado un patrón y un texto, contar cuántos lugares coinciden. Se modela como convolución de polinomios donde los coeficientes son $0$ o $1$.
+
+\begin{lstlisting}[style=cppstyle, caption={Contar sumas de pares con FFT (frecuencias)}]
+    // Dado un arreglo, contar pares (i,j) con a[i] + a[j] = k
+    // 1. Construir vector de frecuencias f donde f[v] = cant de veces que aparece v
+    // 2. C = multiply(f, f)
+    // 3. C[k] = cantidad de pares (con repeticion e i=j incluidos)
+
+    int MAXV = 1e6 + 1;
+    vector<ll> f(MAXV, 0);
+    for (int x : a) f[x]++;
+
+    auto c = multiply(f, f);
+    // c[k] = cantidad de pares (a[i], a[j]) con a[i] + a[j] = k
+    // Recordar descontar pares (x, x) si no se permiten i = j
+\end{lstlisting}
+
+\subsection{Consideraciones importantes}
+
+\begin{itemize}
+    \item \textbf{Potencia de 2}: el tamaño del vector pasado a \texttt{fft} debe ser siempre potencia de $2$. Si no lo es, hay que hacer \textit{padding} con ceros.
+    \item \textbf{Tamaño del resultado}: el producto de polinomios de grados $d_A$ y $d_B$ tiene grado $d_A + d_B$, por lo tanto el vector de la FFT debe tener tamaño $\geq d_A + d_B + 1$ (redondeado a potencia de $2$).
+    \item \textbf{Precisión}: la FFT con \texttt{double} tiene errores de punto flotante. Para coeficientes grandes (o polinomios largos), usar \texttt{llround} al convertir el resultado final. Si los coeficientes son muy grandes, puede ser necesaria la \textbf{FFT de número teórico} (NTT) con aritmética modular.
+    \item \textbf{Versión iterativa}: la versión recursiva es simple pero tiene overhead por las llamadas. Para tiempo crítico existe una versión iterativa con reordenamiento bit-reversal que es más rápida en la práctica.
+\end{itemize}
+
+\subsection{Complejidad}
+
+\begin{itemize}
+    \item \textbf{FFT (DFT directa o inversa)}: $O(n \log n)$
+    \item \textbf{Multiplicación de polinomios}: $O(n \log n)$ donde $n = d_A + d_B$
+    \item \textbf{Multiplicación trivial} (para comparar): $O(n^2)$
+\end{itemize}

@@ -43,7 +43,11 @@
 
 \subsection{BFS (Breadth-First Search)}
 
-\begin{lstlisting}[caption=BFS con cálculo de distancias]
+BFS recorre el grafo por capas (nivel por nivel), lo que garantiza que la primera vez que llega a un nodo, lo hace por el \textbf{camino más corto} (en cantidad de aristas).
+
+\subsubsection*{BFS básico con distancias}
+
+\begin{lstlisting}[caption=BFS con calculo de distancias]
 	int dist[MAXN];
 	bool vis[MAXN];
 	vector<int> G[MAXN];
@@ -67,19 +71,137 @@
 	}
 \end{lstlisting}
 
-\section{Componentes conexas}
+Despues de llamar \texttt{bfs(s)}, \texttt{dist[v]} contiene la distancia minima (en cantidad de aristas) desde \texttt{s} hasta \texttt{v}. Si \texttt{vis[v] == false}, el nodo \texttt{v} no es alcanzable desde \texttt{s}.
 
-\begin{lstlisting}[caption=Contar componentes conexas]
-	int comp = 0;
+\subsubsection*{Obtener la distancia mínima entre dos nodos}
+
+Para saber la distancia entre \texttt{s} y un nodo destino \texttt{t}:
+
+\begin{lstlisting}[caption=Consultar distancia minima]
+	bfs(s);
 	
-	for (int i = 0; i < n; ++i) {
-		if (!vis[i]) {
-			dfs(i);
-			comp++;
+	if (!vis[t]) {
+		// t no es alcanzable desde s
+	} else {
+		cout << dist[t] << "\n"; // distancia minima s -> t
+	}
+\end{lstlisting}
+
+\subsubsection*{Reconstruir el camino mínimo}
+
+Para recuperar \textbf{la secuencia de nodos} del camino mas corto, se agrega un arreglo \texttt{parent[]} que registra, para cada nodo, desde cual nodo fue visitado por primera vez.
+
+\bigskip
+
+\textbf{BFS con arreglo parent:}
+
+\begin{lstlisting}[caption=BFS con reconstruccion de camino]
+	int dist[MAXN], par[MAXN];
+	bool vis[MAXN];
+	vector<int> G[MAXN];
+	
+	void bfs(int s, int n) {
+		fill(vis, vis + n, false);
+		fill(par, par + n, -1);
+		
+		queue<int> q;
+		vis[s] = true;
+		dist[s] = 0;
+		q.push(s);
+		
+		while (!q.empty()) {
+			int u = q.front(); q.pop();
+			for (int v : G[u]) {
+				if (!vis[v]) {
+					vis[v] = true;
+					dist[v] = dist[u] + 1;
+					par[v] = u;  // u es el padre de v
+					q.push(v);
+				}
+			}
 		}
 	}
 \end{lstlisting}
 
+\textbf{Reconstruir el camino desde \texttt{s} hasta \texttt{t}:}
+
+Una vez que termina el BFS, el camino esta encadenado hacia atras a traves de \texttt{par[]}. Se sigue desde \texttt{t} hasta llegar a \texttt{-1} (el origen), y luego se invierte.
+
+\begin{lstlisting}[caption=Funcion para reconstruir el camino]
+	vector<int> getPath(int s, int t) {
+		if (!vis[t]) return {}; // t no alcanzable
+		
+		vector<int> path;
+		for (int v = t; v != -1; v = par[v])
+			path.push_back(v);
+		
+		reverse(path.begin(), path.end());
+		// path = {s, ..., t}
+		return path;
+	}
+\end{lstlisting}
+
+\textbf{Ejemplo completo:}
+
+\begin{lstlisting}[caption=Ejemplo s=0 a t=4]
+	bfs(0, n);
+	
+	auto path = getPath(0, 4);
+	
+	cout << "Distancia: " << dist[4] << "\n";
+	cout << "Camino: ";
+	for (int v : path) cout << v << " ";
+	cout << "\n";
+	// Salida: Distancia: 3
+	//         Camino: 0 2 3 4
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Distancia}: \texttt{dist[t]} despues de correr \texttt{bfs(s)}.
+    \item \textbf{Camino}: seguir \texttt{par[t] -> par[par[t]] -> ...} hasta llegar a \texttt{-1}, luego invertir.
+    \item \textbf{Complejidad}: $O(n + m)$ para construccion del BFS.
+\end{itemize}
+
+
+\section{Componentes conexas}
+
+Para contar la cantidad de componentes conexas en un grafo no dirigido y guardar un nodo representativo (representante) de cada una de ellas, podemos usar el siguiente enfoque con DFS:
+
+\begin{lstlisting}[language=C++, caption={Contar componentes conexas y guardar representantes}]
+const ll MAXN = 1e5 + 10;
+bool vis[MAXN];
+vector<ll> g[MAXN];
+vector<ll> lista; // Guarda un nodo representativo de cada componente
+
+void dfs(ll u) {
+    vis[u] = true;
+    for (ll v : g[u]) {
+        if (!vis[v]) {
+            dfs(v);
+        }
+    }
+}
+
+ll comp(ll n) {
+    ll ans = 0;
+    lista.clear();
+    fore(i, 0, n) {
+        if (!vis[i]) {
+            dfs(i);
+            ans++;
+            lista.pb(i + 1); // Guarda el nodo representativo (1-indexed)
+        }
+    }
+    return ans;
+}
+\end{lstlisting}
+
+\subsection*{Detalles de uso}
+\begin{itemize}
+    \item \textbf{Resultado:} Al llamar a \texttt{comp(n)}, la función devuelve la **cantidad total de componentes conexas** del grafo.
+    \item \textbf{Representantes:} El vector \texttt{lista} contendrá un nodo representativo por cada componente hallada (en este caso guardado con indexación 1, \texttt{i + 1}).
+    \item \textbf{Complejidad:} $\mathcal{O}(n + m)$ ya que se visita cada nodo y cada arista una sola vez.
+\end{itemize}
 \section{Dijkstra (caminos mínimos)}
 
 \begin{lstlisting}[caption=Dijkstra con priority queue]
@@ -359,38 +481,6 @@ Inicialmente, todos los nodos están en blanco (0), lo que significa que no fuer
 	}
 \end{lstlisting}
 
-\section{Distancia mínima desde un nodo}
-
-\begin{enumerate}
-	\item Usar BFS para calcular distancias desde el nodo fuente
-	\item Mantener arreglo de distancias inicializado en -1
-\end{enumerate}
-
-\subsection*{Código en C++}
-
-\begin{lstlisting}[caption=Distancia mínima con BFS]
-	vector<int> G[MAXN];
-	int dist[MAXN];
-	
-	void bfs(int s, int n) {
-		queue<int> q;
-		fill(dist, dist + n, -1);
-		
-		dist[s] = 0;
-		q.push(s);
-		
-		while (!q.empty()) {
-			int u = q.front(); q.pop();
-			for (int v : G[u]) {
-				if (dist[v] == -1) {
-					dist[v] = dist[u] + 1;
-					q.push(v);
-				}
-			}
-		}
-	}
-\end{lstlisting}
-
 \section{Verificar si el grafo es un árbol}
 
 \begin{enumerate}
@@ -433,6 +523,71 @@ Inicialmente, todos los nodos están en blanco (0), lo que significa que no fuer
 	}
 \end{lstlisting}
 
+\section{Operaciones básicas en árboles}
+
+\subsection*{Obtener el padre de cada nodo}
+
+Durante un DFS, el nodo desde el que llegaste es el padre.
+
+\begin{lstlisting}[caption=Obtener padre de cada nodo]
+	vector<vector<ll>> arb(n);
+	vector<ll> padre(n, -1);
+	
+	void dfs(ll u, ll p){
+		padre[u] = p;
+		
+		for(ll v : arb[u]){
+			if(v == p) continue;
+			dfs(v, u);
+		}
+	}
+\end{lstlisting}
+
+Llamás:
+
+\begin{lstlisting}[caption=Llamada inicial del DFS]
+	dfs(0, -1);
+\end{lstlisting}
+
+\subsection*{Obtener la cantidad de hijos}
+
+Cada vez que desde un nodo visitás un vecino que no es su padre, encontraste un hijo.
+
+\begin{lstlisting}[caption=Obtener cantidad de hijos]
+	vector<ll> hijos(n, 0);
+	
+	void dfs(ll u, ll p){
+		padre[u] = p;
+		
+		for(ll v : arb[u]){
+			if(v == p) continue;
+			
+			hijos[u]++;
+			
+			dfs(v, u);
+		}
+	}
+\end{lstlisting}
+
+\subsection*{Obtener el grado de cada nodo}
+
+El grado no depende de la raíz. Es simplemente la cantidad de vecinos.
+
+Como estás usando listas de adyacencia:
+
+\begin{lstlisting}[caption=Obtener grado de un nodo]
+	vector<ll> grado(n);
+	
+	for(ll i = 0; i < n; i++)
+		grado[i] = arb[i].size();
+\end{lstlisting}
+
+O directamente imprimiendo:
+
+\begin{lstlisting}[caption=Imprimir grado]
+	cout << arb[i].size();
+\end{lstlisting}
+
 \section{Número de hojas en un árbol}
 
 \begin{enumerate}
@@ -455,63 +610,120 @@ Inicialmente, todos los nodos están en blanco (0), lo que significa que no fuer
 	}
 \end{lstlisting}
 
-\section{Reconstrucción de Caminos (BFS)}
+\section{Diámetro de un árbol}
 
-Cuando necesitas no solo la distancia mínima, sino la secuencia de nodos, se utiliza un arreglo de predecesores (o padres).
+El algoritmo más usado en programación competitiva para obtener el diámetro de un árbol es hacer dos DFS (o dos BFS).
 
-\subsection*{1. Concepto Clave: El arreglo parent}
+\subsection*{Idea}
 
-\begin{itemize}
-	\item \texttt{parent[v] = u}: Significa que llegamos al nodo \texttt{v} desde el nodo \texttt{u}.
-	\item Inicializamos todo el arreglo en -1 (o un valor nulo) para identificar el origen y los nodos no visitados.
-\end{itemize}
+El diámetro es el camino simple más largo del árbol. En un árbol, si empezás desde cualquier nodo y buscás el más lejano, siempre terminás en uno de los extremos del diámetro. Luego, al volver a buscar desde ese extremo, llegás al otro extremo y la distancia recorrida es exactamente el diámetro.
 
-\subsection*{2. Implementación del BFS}
+\subsection*{Algoritmo}
 
-\begin{lstlisting}[caption=BFS con arreglo parent]
-// n = numero de nodos, start = nodo inicial
-vector<int> parent(n + 1, -1);
-vector<int> dist(n + 1, -1);
-queue<int> q;
+\begin{enumerate}
+	\item Elegí un nodo cualquiera (por ejemplo, el 0 o el 1).
+	\item Hacé un DFS/BFS desde ese nodo y encontrá el vértice más lejano $u$.
+	\item Hacé otro DFS/BFS desde $u$ y encontrá el vértice más lejano $v$.
+	\item La distancia entre $u$ y $v$ es el diámetro.
+\end{enumerate}
 
-q.push(start);
-dist[start] = 0;
+\textbf{Complejidad:} $\mathcal{O}(n)$.
 
-while(!q.empty()){
-	int u = q.front(); q.pop();
+\subsection*{Código en C++}
+
+\begin{lstlisting}[caption=Obtener diámetro de un árbol]
+	#include <bits/stdc++.h>
+	using namespace std;
 	
-	for(int v : G[u]){
-		if(dist[v] == -1){ // Si no ha sido visitado
-			dist[v] = dist[u] + 1;
-			parent[v] = u; // REGISTRO: u es el padre de v
-			q.push(v);
+	using ll = long long;
+	
+	vector<vector<int>> g;
+	int mxDist, farthest;
+	
+	void dfs(int v, int p, int d){
+		if(d > mxDist){
+			mxDist = d;
+			farthest = v;
+		}
+		
+		for(int u : g[v]){
+			if(u != p)
+				dfs(u, v, d + 1);
 		}
 	}
-}
-\end{lstlisting}
-
-\subsection*{3. Función para recuperar el camino}
-
-Una vez termina el BFS, el camino está encadenado desde el destino hacia atrás. Debes seguir los punteros hasta llegar al origen y luego invertir la lista.
-
-\begin{lstlisting}[caption=Función para reconstruir el camino]
-vector<int> getPath(int start, int end, const vector<int>& parent) {
-	vector<int> path;
 	
-	// Si el destino no tiene padre y no es el inicio, no hay camino
-	if (parent[end] == -1 && start != end) return {};
-
-	// Retrocedemos desde 'end' hasta 'start'
-	for (int v = end; v != -1; v = parent[v]) {
-		path.push_back(v);
+	int main(){
+		int n;
+		cin >> n;
+		
+		g.assign(n, {});
+		
+		for(int i = 0; i < n - 1; i++){
+			int u, v;
+			cin >> u >> v;
+			--u; --v;
+			
+			g[u].push_back(v);
+			g[v].push_back(u);
+		}
+		
+		mxDist = -1;
+		dfs(0, -1, 0);
+		int extremo1 = farthest;
+		
+		mxDist = -1;
+		dfs(extremo1, -1, 0);
+		int extremo2 = farthest;
+		
+		cout << "Diametro = " << mxDist << "\n";
+		cout << "Extremos: " << extremo1 + 1 << " " << extremo2 + 1 << "\n";
 	}
-	
-	// El camino esta [destino, ..., origen], lo invertimos
-	reverse(path.begin(), path.end());
-	
-	return path;
-}
 \end{lstlisting}
+
+\subsection*{Recuperar el camino del diámetro}
+
+Si además querés recuperar el camino del diámetro, guardá el padre en el segundo DFS.
+
+\begin{lstlisting}[caption=DFS guardando padres]
+	vector<int> parent;
+	
+	void dfs(int v, int p, int d){
+		parent[v] = p;
+		
+		if(d > mxDist){
+			mxDist = d;
+			farthest = v;
+		}
+		
+		for(int u : g[v]){
+			if(u != p)
+				dfs(u, v, d + 1);
+		}
+	}
+\end{lstlisting}
+
+Después del segundo DFS:
+
+\begin{lstlisting}[caption=Reconstruir camino del diámetro]
+	vector<int> path;
+	for(int x = extremo2; x != -1; x = parent[x])
+		path.push_back(x);
+	
+	reverse(path.begin(), path.end());
+\end{lstlisting}
+
+Ahora \texttt{path} contiene todos los nodos del diámetro en orden.
+
+\subsection*{Variante con pesos}
+
+Si las aristas tienen pesos positivos, el algoritmo es exactamente el mismo, pero en lugar de sumar 1 en el DFS hacés:
+
+\begin{lstlisting}[caption=DFS con pesos]
+	dfs(u, v, dist + peso);
+\end{lstlisting}
+
+La complejidad sigue siendo $\mathcal{O}(n)$ porque el grafo es un árbol.
+
 
 \section{Orden Topológico}
 
