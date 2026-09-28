@@ -328,85 +328,123 @@ ll comp(ll n) {
 	\item Aumentar \texttt{deg[u]} y \texttt{deg[v]} cada vez que se agrega una arista entre \( u \) y \( v \).
 \end{itemize}
 		
-\section{Detectar ciclos en grafo no dirigido}
+\section{Detección de Ciclos}
 
+\subsection{Grafo No Dirigido}
+
+En un grafo no dirigido, un ciclo existe si durante un recorrido DFS alcanzamos un nodo ya visitado que \textbf{no es el padre} directo del nodo actual.
+
+\subsubsection*{Algoritmo y Reconstrucción}
+Para recuperar los nodos que forman el ciclo:
 \begin{enumerate}
-	\item Usar DFS manteniendo el nodo padre
-	\item Si encuentras un nodo ya visitado que no es el padre, hay ciclo
+    \item Se guardan los extremos de la arista que cierra el ciclo en las variables \texttt{cicloU} y \texttt{cicloV}.
+    \item Se reconstruye el camino desde \texttt{cicloU} hacia atrás usando \texttt{par[]} hasta llegar a \texttt{cicloV}.
+    \item Se añade \texttt{cicloV} al final para cerrar el ciclo explícitamente.
 \end{enumerate}
 
-\subsection*{Código en C++}
+\begin{lstlisting}[language=C++, caption={Detectar y reconstruir ciclo en grafo no dirigido (1-indexed)}]
+const ll MAXN = 1e5 + 10;
+bool vis[MAXN];
+ll par[MAXN];
+vector<ll> g[MAXN];
+ll cicloU = -1, cicloV = -1;
 
-\begin{lstlisting}[caption=Detectar ciclos en grafo no dirigido]
-	vector<int> G[MAXN];
-	bool vis[MAXN];
-	
-	bool hasCycle(int u, int parent) {
-		vis[u] = true;
-		for (int v : G[u]) {
-			if (!vis[v]) {
-				if (hasCycle(v, u)) 
-					return true;
-			}
-			else if (v != parent) 
-				return true;
-		}
-		return false;
-	}
-	
-	bool hasCycleAll(int n) {
-		memset(vis, 0, sizeof(vis));
-		for (int i = 0; i < n; ++i) {
-			if (!vis[i]) {
-				if (hasCycle(i, -1)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+bool dfs(ll u, ll parent) {
+    vis[u] = true;
+    par[u] = parent;
+    
+    for (ll v : g[u]) {
+        if (!vis[v]) {
+            if (dfs(v, u)) return true;
+        } else if (v != parent) {
+            // Se encontró una arista de retroceso que cierra el ciclo
+            cicloU = u;
+            cicloV = v;
+            return true;
+        }
+    }
+    return false;
+}
+
+vector<ll> obtenerCiclo() {
+    vector<ll> ciclo;
+    // Reconstruimos el camino desde cicloU hasta cicloV a traves de los padres
+    for (ll curr = cicloU; curr != cicloV; curr = par[curr]) {
+        ciclo.push_back(curr);
+    }
+    ciclo.push_back(cicloV);
+    ciclo.push_back(cicloU); // Cerrar el ciclo (opcional)
+    return ciclo;
+}
 \end{lstlisting}
 
-\section{Detectar ciclos en grafo dirigido}
+\subsubsection*{Cómo usarlo}
 
-Inicialmente, todos los nodos están en blanco (0), lo que significa que no fueron visitados. Cuando empezamos a explorar un nodo, lo marcamos como gris (1), indicando que está en proceso dentro de la recursión. Luego recorremos sus vecinos: si encontramos uno blanco, seguimos el DFS; pero si encontramos un nodo gris, significa que volvimos a un nodo que todavía está en la pila de recursión, lo que implica la existencia de un ciclo (una arista de retroceso o back edge). Finalmente, cuando terminamos de procesar un nodo, lo marcamos como negro (2), indicando que ya fue completamente explorado. Para asegurarnos de detectar ciclos en todo el grafo, este proceso se inicia desde cada nodo no visitado. La función \texttt{hasCycleAll()} es la que se usaría en el \texttt{main} para verificar que tu grafo tiene un ciclo.
+\begin{lstlisting}[language=C++, caption={Uso en la funcion principal}]
+int main() {
+    // Lectura e inicializacion de variables...
+    fill(vis, vis + n + 1, false);
+    fill(par, par + n + 1, -1);
+    cicloU = -1; cicloV = -1;
 
-\begin{enumerate}
-	\item Usar DFS con colores (0: no visitado, 1: en proceso, 2: visitado)
-	\item Si encuentras un nodo "en proceso" durante el DFS, hay ciclo
-\end{enumerate}
+    bool hay_ciclo = false;
+    fore(i, 1, n + 1) { // Iteracion 1-indexed para todas las componentes
+        if (!vis[i]) {
+            if (dfs(i, -1)) {
+                hay_ciclo = true;
+                break;
+            }
+        }
+    }
 
-\subsection*{Código en C++}
+    if (hay_ciclo) {
+        vector<ll> ciclo = obtenerCiclo();
+        cout << "Ciclo detectado de tamano " << ciclo.size() - 1 << ":\n";
+        for (ll nodo : ciclo) cout << nodo << " ";
+        cout << "\n";
+    } else {
+        cout << "IMPOSSIBLE\n";
+    }
+}
+\end{lstlisting}
 
-\begin{lstlisting}[caption=Detectar ciclos en grafo dirigido]
-	vector<int> G[MAXN];
-	// 0: blanco (no visitado)
-	// 1: gris (en proceso)
-	// 2: negro (visitado)
-	int color[MAXN]; 
-	
-	bool hasCycleDirected(int u) {
-		color[u] = 1; // gris
-		for (int v : G[u]) {
-			if (color[v] == 0) {
-				if (hasCycleDirected(v)) 
-					return true;
-			} 
-			else if (color[v] == 1) 
-				return true;
-		}
-		color[u] = 2; // negro
-		return false;
-	}
-	
-	bool hasCycleAll(int n) {
-		fill(color, color + n, 0);
-		for (int i = 0; i < n; ++i) {
-			if (color[i] == 0 && hasCycleDirected(i))
-				return true;
-		}
-		return false;
-	}
+\subsection{Grafo Dirigido}
+
+En un grafo dirigido se utiliza el algoritmo de colores para identificar **aristas de retroceso** (\textit{back edges}), las cuales apuntan a nodos que aún se encuentran en la pila de recursión activa.
+
+\begin{itemize}
+    \item \textbf{0 (Blanco):} Nodo no visitado.
+    \item \textbf{1 (Gris):} Nodo en proceso de exploración (en la pila de recursión).
+    \item \textbf{2 (Negro):} Nodo completamente visitado.
+\end{itemize}
+
+\begin{lstlisting}[language=C++, caption={Detectar ciclo en grafo dirigido}]
+int color[MAXN]; // 0: blanco, 1: gris, 2: negro
+vector<ll> g[MAXN];
+
+bool dfsDirigido(ll u) {
+    color[u] = 1; // En proceso (gris)
+    
+    for (ll v : g[u]) {
+        if (color[v] == 0) {
+            if (dfsDirigido(v)) return true;
+        } else if (color[v] == 1) {
+            return true; // Encontrado nodo en la pila -> Hay ciclo
+        }
+    }
+    
+    color[u] = 2; // Procesado (negro)
+    return false;
+}
+
+bool hayCicloDirigido(ll n) {
+    fill(color, color + n + 1, 0);
+    fore(i, 1, n + 1) {
+        if (color[i] == 0 && dfsDirigido(i))
+            return true;
+    }
+    return false;
+}
 \end{lstlisting}
 
 \section{Verificar si hay ciclo impar}
