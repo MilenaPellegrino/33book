@@ -445,41 +445,60 @@ Inicialmente, todos los nodos están en blanco (0), lo que significa que no fuer
 	}
 \end{lstlisting}
 
-\section{Verificar si el grafo es bipartito}
+\section{Verificar si el grafo es bipartito (o tiene ciclo impar)}
 
+Un grafo es \textbf{bipartito} si sus vértices se pueden dividir en dos conjuntos tales que no existan aristas entre vértices del mismo conjunto. Esto es equivalente a decir que el grafo **no contiene ciclos impares**.
+
+\subsection*{Algoritmo}
 \begin{enumerate}
-	\item Igual que detectar ciclo impar, pero devolviendo el resultado inverso
-	\item Si se puede colorear con 2 colores, es bipartito
+    \item Se intenta colorear el grafo con 2 colores (\texttt{0} y \texttt{1}) usando BFS.
+    \item Si al recorrer un vecino este ya fue coloreado y tiene el mismo color que el nodo actual (\texttt{col[v] == col[u]}), significa que existe un ciclo impar y el grafo \textbf{no es bipartito}.
+    \item Se debe iterar sobre todos los nodos del grafo para asegurar la verificación en **todas las componentes conexas**.
 \end{enumerate}
 
 \subsection*{Código en C++}
 
-\begin{lstlisting}[caption=Verificar si grafo es bipartito]
-	vector<int> G[MAXN];
-	int col[MAXN]; // 0 o 1
-	
-	bool esBipartito(int n) {
-		queue<int> q;
-		fill(col, col + n, -1);
-		
-		col[0] = 0;
-		q.push(0);
-		
-		while (!q.empty()) {
-			int u = q.front(); q.pop();
-			for (int v : G[u]) {
-				if (col[v] == -1) {
-					col[v] = 1 - col[u];
-					q.push(v);
-				}
-				else if (col[v] == col[u]) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
+\begin{lstlisting}[language=C++, caption={Verificar si un grafo es bipartito (1-indexed)}]
+const ll MAXN = 1e5 + 10;
+ll col[MAXN];
+vector<ll> g[MAXN];
+
+bool bfs(ll s) {
+    queue<ll> q;
+    col[s] = 0;
+    q.push(s);
+    
+    while (!q.empty()) {
+        ll u = q.front();
+        q.pop();
+        for (ll v : g[u]) {
+            if (col[v] == -1) {
+                col[v] = 1 - col[u]; // Color opuesto
+                q.push(v);
+            } else if (col[v] == col[u]) {
+                return false; // Conflicto de colores (ciclo impar)
+            }
+        }
+    }
+    return true;
+}
+
+bool esBipar(ll n) {
+    fill(col, col + n + 1, -1);
+    fore(i, 1, n + 1) { // Iterar sobre todas las componentes (1-indexed)
+        if (col[i] == -1) {
+            if (!bfs(i)) return false;
+        }
+    }
+    return true;
+}
 \end{lstlisting}
+
+\subsection*{Detalles de uso}
+\begin{itemize}
+    \item \textbf{Indexación:} El código asume nodos numerados de $1$ a $n$. Si es $0$-indexed, ajustar la iteración en \texttt{esBipar} a \texttt{fore(i, 0, n)}.
+    \item \textbf{Complejidad:} $\mathcal{O}(n + m)$ ya que procesa cada nodo y arista una sola vez.
+\end{itemize}
 
 \section{Verificar si el grafo es un árbol}
 
