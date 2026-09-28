@@ -202,31 +202,102 @@ ll comp(ll n) {
     \item \textbf{Representantes:} El vector \texttt{lista} contendrá un nodo representativo por cada componente hallada (en este caso guardado con indexación 1, \texttt{i + 1}).
     \item \textbf{Complejidad:} $\mathcal{O}(n + m)$ ya que se visita cada nodo y cada arista una sola vez.
 \end{itemize}
-\section{Dijkstra (caminos mínimos)}
+\section{Dijkstra (Caminos Mínimos con Pesos Positivos)}
 
-\begin{lstlisting}[caption=Dijkstra con priority queue]
-	typedef pair<int, int> pii;
-	vector<pii> G[MAXN]; // {peso, destino}
-	int dist[MAXN];
-	
-	void dijkstra(int s) {
-		priority_queue<pii, vector<pii>, greater<pii>> pq;
-		fill(dist, dist + MAXN, INF);
-		dist[s] = 0;
-		pq.push({0, s});
-		
-		while (!pq.empty()) {
-			auto [d, u] = pq.top(); pq.pop();
-			if (d > dist[u]) continue;
-			for (auto [w, v] : G[u]) {
-				if (dist[u] + w < dist[v]) {
-					dist[v] = dist[u] + w;
-					pq.push({dist[v], v});
-				}
-			}
-		}
-	}
+El algoritmo de Dijkstra permite encontrar la distancia mínima desde un nodo origen $s$ a todos los demás nodos en un grafo con \textbf{pesos no negativos}. Utiliza una cola de prioridad (\texttt{priority\_queue}) para procesar siempre el nodo con la menor distancia acumulada hasta el momento.
+
+\subsection*{Representación y Lectura de un Grafo con Pesos}
+
+Para almacenar un grafo con pesos, la lista de adyacencia guarda pares de la forma \texttt{\{vecino, peso\}}:
+
+\begin{lstlisting}[language=C++, caption={Representación de grafo ponderado}]
+const ll MAXN = 1e5 + 10;
+// g[u] contiene pares {v, w} donde v es el destino y w el peso de la arista
+vector<pair<ll, ll>> g[MAXN]; 
+
+void agregar_arista(ll u, ll v, ll w, bool dirigido = false) {
+    g[u].push_back({v, w});
+    if (!dirigido) {
+        g[v].push_back({u, w}); // Si el grafo es no dirigido
+    }
+}
 \end{lstlisting}
+
+Para leer las aristas desde la entrada estándar ($1$-indexed):
+
+\begin{lstlisting}[language=C++, caption={Lectura de aristas ponderadas}]
+ll n, m; cin >> n >> m;
+fore(i, 0, m) {
+    ll u, v, w; 
+    cin >> u >> v >> w;
+    g[u].push_back({v, w});
+    // g[v].push_back({u, w}); // Descomentar si es no dirigido
+}
+\end{lstlisting}
+
+\subsection*{Implementación de Dijkstra}
+
+La \texttt{priority\_queue} en C++ ordena los elementos de mayor a menor por defecto. Para que funcione como una \textit{min-heap} (menor distancia primero), se utiliza \texttt{greater<pair<ll,ll>>}.
+
+\begin{lstlisting}[language=C++, caption={Algoritmo de Dijkstra con C++}]
+const ll INF = 1e18 + 10;
+const ll MAXN = 1e5 + 10;
+
+vector<pair<ll, ll>> g[MAXN]; // {destino, peso}
+ll dist[MAXN];
+ll par[MAXN]; // Para reconstruccion del camino (opcional)
+
+void dijkstra(ll s, ll n) {
+    // priority_queue guarda pares {distancia_acumulada, nodo}
+    priority_queue<pair<ll, ll>, vector<pair<ll, ll>>, greater<pair<ll, ll>>> pq;
+    
+    fill(dist, dist + n + 1, INF);
+    fill(par, par + n + 1, -1);
+    
+    dist[s] = 0;
+    pq.push({0, s});
+    
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); 
+        pq.pop();
+        
+        // Si encontramos una distancia guardada menor, ignoramos esta entrada desactualizada
+        if (d > dist[u]) continue;
+        
+        for (auto [v, w] : g[u]) {
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                par[v] = u; // Guardar el padre para reconstruir el camino
+                pq.push({dist[v], v});
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection*{Reconstrucción del Camino Mínimo}
+
+Para obtener la secuencia exacta de nodos del camino mínimo desde $s$ hasta $t$:
+
+\begin{lstlisting}[language=C++, caption={Recuperar el camino desde origen s a destino t}]
+vector<ll> obtenerCamino(ll s, ll t) {
+    if (dist[t] == INF) return {}; // t no es alcanzable desde s
+    
+    vector<ll> camino;
+    for (ll v = t; v != -1; v = par[v]) {
+        camino.push_back(v);
+    }
+    reverse(camino.begin(), camino.end());
+    return camino;
+}
+\end{lstlisting}
+
+\subsection*{Detalles de uso y Complejidad}
+\begin{itemize}
+    \item \textbf{Complejidad temporal:} $\mathcal{O}((N + M) \log N)$, adecuada para $N, M \le 10^5$ o $2 \cdot 10^5$.
+    \item \textbf{Tipo de datos:} Se utiliza \texttt{ll} (\texttt{long long}) y \texttt{INF = 1e18} para prevenir desbordamientos (\textit{overflow}) durante las sumas de pesos.
+    \item \textbf{Restricción:} Solo funciona si todos los pesos $w \ge 0$. Si existen pesos negativos, usar Bellman-Ford o SPFA.
+\end{itemize}
 
 \section{Bellman-Ford}
 
